@@ -1,2 +1,2 @@
-# go-gin_test
-go-gin study project
+# go-utils
+some utils for go
