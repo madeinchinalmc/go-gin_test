@@ -14,18 +14,18 @@ type Pair interface {
 	Hash() uint64
 	Element() interface{}
 	SetElement(element interface{}) error
-	//生成一个键 - 元素对的副本并返回
+	// Copy 生成一个键 - 元素对的副本并返回
 	Copy() Pair
-	//返回当前键 - 元素对的字符串表示形式
+	// String 返回当前键 - 元素对的字符串表示形式
 	String() string
 }
 
 // 用于表示单向链接的键 - 元素对的接口
 type linkedPair interface {
-	// 获取下一个键 - 元素对
+	// Next 获取下一个键 - 元素对
 	//若返回值为nil 目前已经在单链表的末尾
 	Next() Pair
-	// 设置下一个键 - 元素 对
+	// SetNext  设置下一个键 - 元素 对
 	// 形成一个单链表
 	SetNext(nextPair Pair) error
 }
