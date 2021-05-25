@@ -24,11 +24,11 @@ type IllegalPairTypeError struct {
 }
 
 //// newIllegalPairTypeError 会创建一个IllegalPairTypeError类型的实例。
-//func newIllegalPairTypeError(pair Pair) IllegalPairTypeError {
-//	return IllegalPairTypeError{
-//		msg: fmt.Sprintf("concurrent map: illegal pair type: %T", pair),
-//	}
-//}
+func newIllegalPairTypeError(pair Pair) IllegalPairTypeError {
+	return IllegalPairTypeError{
+		msg: fmt.Sprintf("concurrent map: illegal pair type: %T", pair),
+	}
+}
 
 func (ipte IllegalPairTypeError) Error() string {
 	return ipte.msg

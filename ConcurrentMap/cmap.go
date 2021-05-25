@@ -3,6 +3,7 @@ package concurrentMap
 import "sync/atomic"
 
 type ConcurrentMap interface {
+	//并发量
 	Concurrency() int
 	Put(key string, element interface{}) (bool, error)
 	Get(key string) interface{}
@@ -15,8 +16,9 @@ type Segment interface {
 
 type myConcurrentMap struct {
 	concurrency int
-	segments    []Segment
-	total       uint64
+	// 一个散列段
+	segments []Segment
+	total    uint64
 }
 
 type PairRedistributor interface {
@@ -33,7 +35,7 @@ func NewConcurrentMap(concurrency int, pairRedistributor PairRedistributor) (Con
 	cmap.concurrency = concurrency
 	cmap.segments = make([]Segment, concurrency)
 	for i := 0; i < concurrency; i++ {
-		cmap.segments[i] = nil //todo
+		cmap.segments[i] = nil //todo 散列桶
 	}
 	return cmap, nil
 }
