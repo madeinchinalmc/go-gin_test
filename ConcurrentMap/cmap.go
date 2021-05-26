@@ -14,14 +14,6 @@ type ConcurrentMap interface {
 	Len() uint64
 }
 
-type Segment interface {
-	Put(p Pair) (bool, error)
-	Get(key string) Pair
-	GetWithHash(key string, keyHash uint64) Pair
-	Delete(key string) bool
-	Size() uint64
-}
-
 type myConcurrentMap struct {
 	// 并发量
 	concurrency int
@@ -54,17 +46,37 @@ func (cmap *myConcurrentMap) Concurrency() int {
 }
 
 func (cmap *myConcurrentMap) Put(key string, element interface{}) (bool, error) {
-	//todo
-	return true, nil
+
+	p, err := newPair(key, element)
+	if err != nil {
+		return false, err
+	}
+	s := cmap.findSegment(p.Hash())
+	ok, err := s.Put(p)
+	if ok {
+		atomic.AddUint64(&cmap.total, 1)
+	}
+	return ok, err
 }
 
 func (cmap *myConcurrentMap) Get(key string) interface{} {
-	//todo
-	return nil
+
+	keyHash := hash(key)
+	s := cmap.findSegment(keyHash)
+	pair := s.GetWithHash(key, keyHash)
+	if pair == nil {
+		return nil
+	}
+	return pair.Element()
 }
 
 func (cmap *myConcurrentMap) Delete(key string) bool {
-	//todo
+
+	s := cmap.findSegment(hash(key))
+	if s.Delete(key) {
+		atomic.AddUint64(&cmap.total, ^uint64(0))
+		return true
+	}
 	return false
 }
 func (cmap *myConcurrentMap) Len() uint64 {
