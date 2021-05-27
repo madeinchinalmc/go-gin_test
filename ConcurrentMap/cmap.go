@@ -22,9 +22,6 @@ type myConcurrentMap struct {
 	total    uint64
 }
 
-type PairRedistributor interface {
-}
-
 func NewConcurrentMap(concurrency int, pairRedistributor PairRedistributor) (ConcurrentMap, error) {
 	if concurrency <= 0 {
 		return nil, newIllegalParameterError("concurrency is too small")
