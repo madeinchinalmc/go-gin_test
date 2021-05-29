@@ -25,3 +25,9 @@ type Bucket interface {
 	// 返回当前散列桶字符串表示形式
 	String() string
 }
+
+// newBucket 会创建一个Bucket类型的实例。
+func newBucket() Bucket {
+
+	return nil
+}
