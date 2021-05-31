@@ -1,6 +1,7 @@
 package concurrentMap
 
 import (
+	"bytes"
 	"sync"
 	"sync/atomic"
 )
@@ -69,7 +70,16 @@ func (b *bucket) Put(p Pair, lock sync.Locker) (bool, error) {
 }
 
 func (b *bucket) Get(key string) Pair {
-	panic("implement me")
+	firstPair := b.GetFirstPair()
+	if firstPair == nil {
+		return nil
+	}
+	for v := firstPair; v != nil; v = v.Next() {
+		if v.Key() == key {
+			return v
+		}
+	}
+	return nil
 }
 
 func (b *bucket) GetFirstPair() Pair {
@@ -83,19 +93,65 @@ func (b *bucket) GetFirstPair() Pair {
 }
 
 func (b *bucket) Delete(key string, lock sync.Locker) bool {
-	panic("implement me")
+	if lock != nil {
+		lock.Lock()
+		defer lock.Unlock()
+	}
+	firstPair := b.GetFirstPair()
+	if firstPair == nil {
+		return false
+	}
+	var prevPairs []Pair
+	var target Pair
+	var breakpoint Pair
+	for v := firstPair; v != nil; v = v.Next() {
+		if v.Key() == key {
+			target = v
+			breakpoint = v.Next()
+			break
+		}
+		prevPairs = append(prevPairs, v)
+	}
+	if target == nil {
+		return false
+	}
+	newFirstPair := breakpoint
+	for i := len(prevPairs) - 1; i >= 0; i-- {
+		pairCopy := prevPairs[i].Copy()
+		pairCopy.SetNext(newFirstPair)
+		newFirstPair = pairCopy
+	}
+	if newFirstPair != nil {
+		b.firstValue.Store(newFirstPair)
+	} else {
+		b.firstValue.Store(placeholder)
+	}
+	atomic.AddUint64(&b.size, ^uint64(0))
+	return true
 }
 
 func (b *bucket) Clear(lock sync.Locker) {
-	panic("implement me")
+	if lock != nil {
+		lock.Lock()
+		defer lock.Unlock()
+	}
+	atomic.StoreUint64(&b.size, 0)
+	b.firstValue.Store(placeholder)
 }
 
 func (b *bucket) Size() uint64 {
-	panic("implement me")
+	return atomic.LoadUint64(&b.size)
 }
 
 func (b *bucket) String() string {
-	panic("implement me")
+	var buf bytes.Buffer
+	buf.WriteString("[ ")
+	for v := b.GetFirstPair(); v != nil; v = v.Next() {
+		buf.WriteString(v.String())
+		buf.WriteString(" ")
+	}
+	buf.WriteString("]")
+	return buf.String()
 }
 
 var placeholder Pair = &pair{}
